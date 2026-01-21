@@ -2,3 +2,8 @@
 .env
 content/
 .claude/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
