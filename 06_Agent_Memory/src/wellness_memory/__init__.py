@@ -17,6 +17,7 @@ from wellness_memory.memory_types import (
     SemanticMemory,
     EpisodicMemory,
     ProceduralMemory,
+    WellnessMetrics,
 )
 from wellness_memory.utils import trim_conversation, summarize_conversation
 
@@ -30,6 +31,7 @@ __all__ = [
     "SemanticMemory",
     "EpisodicMemory",
     "ProceduralMemory",
+    "WellnessMetrics",
     "trim_conversation",
     "summarize_conversation",
 ]

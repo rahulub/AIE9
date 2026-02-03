@@ -12,6 +12,42 @@ from langchain_openai import ChatOpenAI
 
 
 @dataclass
+class WellnessMetrics:
+    """Schema for one day of wellness metrics per user.
+
+    Attributes:
+        day_id: Identifier for the day (e.g. "day_1", "2025-02-01").
+        mood: Mood level (e.g. 1-5 or categorical).
+        energy: Energy level (e.g. 1-5 or categorical).
+        sleep_quality: Sleep quality (e.g. 1-5 or categorical).
+    """
+
+    day_id: str
+    mood: int | str
+    energy: int | str
+    sleep_quality: int | str
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a dict suitable for storing in the memory store."""
+        return {
+            "day_id": self.day_id,
+            "mood": self.mood,
+            "energy": self.energy,
+            "sleep_quality": self.sleep_quality,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "WellnessMetrics":
+        """Build WellnessMetrics from a stored dict."""
+        return cls(
+            day_id=data["day_id"],
+            mood=data["mood"],
+            energy=data["energy"],
+            sleep_quality=data["sleep_quality"],
+        )
+
+
+@dataclass
 class ShortTermMemory:
     """Short-term memory manages conversation context within a thread.
 
