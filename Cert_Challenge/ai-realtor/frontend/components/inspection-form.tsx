@@ -373,11 +373,14 @@ export function InspectionForm({ onSubmit, isLoading }: InspectionFormProps) {
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.preventDefault()
+                e.stopPropagation()
                 addCustomPriority()
               }
             }}
             className="h-9 bg-card border-border text-sm"
             disabled={priorities.length >= 10}
+            autoComplete="off"
+            aria-label="Add custom priority"
           />
           <Button
             type="button"

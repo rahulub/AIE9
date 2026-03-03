@@ -1,0 +1,6 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/eval/.venv/bin/python",
+  "jupyter.kernels.trusted": [
+    "${workspaceFolder}/eval/.venv/share/jupyter/kernels/ai-realtor-eval"
+  ]
+}
