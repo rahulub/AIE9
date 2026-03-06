@@ -67,6 +67,33 @@ What is the key architectural difference between the `simple_agent` and `agent_w
 
 ##### Answer:
 
+## Key Architectural Difference: `simple_agent` vs `agent_with_helpfulness`
+
+## Overview
+
+**`simple_agent`** is a single loop: model → (maybe tools) → END. After the model responds, `tools_condition` decides whether to run tools or END.
+
+**`agent_with_helpfulness`** adds a **helpfulness evaluation node** before ending. After the model responds (without tool calls), it routes to a helpfulness evaluator that decides whether to end or continue the loop.
+
+## How the Helpfulness Evaluation Loop Works
+
+1. **Routing after the agent** (`route_to_action_or_helpfulness`): If the last message has tool calls → go to `action`. Otherwise → go to `helpfulness`.
+
+2. **Helpfulness evaluation** (`helpfulness_node`): Compares the initial user query (first message) with the latest response using a structured output (`HelpfulnessResult`). It injects a synthetic message `"HELPFULNESS:Y"` or `"HELPFULNESS:N"` into the state.
+
+3. **Decision and loop control** (`helpfulness_decision`): Reads that synthetic message:
+   - `"HELPFULNESS:Y"` → END
+   - `"HELPFULNESS:N"` → route back to `agent`
+   - `"HELPFULNESS:END"` → END (safety exit)
+
+### Safeguards Against Infinite Loops
+
+**Message-count guard** (`helpfulness_node`, lines 56–57):
+
+if len(state["messages"]) > 10:
+    return {"messages": [AIMessage(content="HELPFULNESS:END")]}
+
+Once there are more than 10 messages, the helpfulness node injects "HELPFULNESS:END" instead of running the evaluator, which causes helpfulness_decision to terminate the graph and prevents unbounded iterations.
 
 
 #### Question 2:
@@ -74,6 +101,30 @@ What is the role of `langgraph.json` in the LangGraph Deployments? Describe each
 
 ##### Answer:
 
+## The Role of `langgraph.json` in LangGraph Deployments
+
+`langgraph.json` is the main configuration file for the LangGraph CLI and platform. It tells the system how to discover, load, and serve your graphs. The LangGraph CLI uses it as the single entry point for `langgraph dev`, `langgraph build`, and `langgraph up`.
+
+## Key Fields
+
+| Field | Purpose |
+|-------|---------|
+| **`version`** | Schema version of the configuration (e.g., `1`). |
+| **`dependencies`** | **Required.** Where to find Python packages (`pyproject.toml`, `setup.py`, `requirements.txt`). Use `"."` for the current directory or a path like `"./local_package"` so the server installs dependencies correctly. |
+| **`graphs`** | **Required.** Maps graph IDs to their compiled graph locations. Format: `"graph_id": "module.path:variable_or_function"`. Each entry points to a `CompiledStateGraph` or a function that returns one. The platform dynamically imports these at startup. |
+| **`assistants`** | Optional. Defines assistant presets for the API and Studio. Each assistant has `graph_id` (which graph it runs), plus `name` and `description` for the UI. Lets you expose multiple "assistants" (e.g., `agent`, `agent_helpful`) backed by different graphs. |
+| **`env`** | Path to a `.env` file or mapping of environment variables. Ensures API keys and other secrets are loaded when the server starts. |
+| **`python_version`** | Python version for builds and runtime (e.g., `"3.13"`). |
+
+## How the Platform Uses This File
+
+1. **Discovery**: At startup (e.g., `langgraph dev`), the CLI uses the `graphs` block to find each graph. It dynamically imports each `module.path:variable` (e.g., `app.graphs.simple_agent:graph`). The `collect_graphs_from_env` step you saw in the error trace is this discovery phase.
+
+2. **Graph loading**: For each graph ID, the runtime imports the module and retrieves the specified symbol. If something fails during import (e.g., a missing `TAVILY_API_KEY`), the graph fails to load with a `GraphLoadError`.
+
+3. **Assistants**: The `assistants` block seeds the API and Studio with named assistants. When you invoke an assistant ID (e.g., `agent`, `agent_helpful`), the server uses the associated `graph_id` to select which graph to run.
+
+4. **API surface**: Using these graphs and assistants, the Agent Server exposes endpoints for runs, threads, assistants, etc., all driven by this configuration.
 
 
 #### Activity #1:
