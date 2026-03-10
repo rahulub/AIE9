@@ -169,5 +169,5 @@ Follow these steps to prepare and submit your homework:
 5. Add, commit and push your modified files to your GitHub repository.
 
 When submitting your homework, provide:
-- Your Loom video link
-- The GitHub URL to the `15_LangGraph_Platform` folder on your assignment branch
+- Your Loom video link : https://www.loom.com/share/a967f2f79b064fb08902bbfde0f780d2 
+- The GitHub URL to the `15_LangGraph_Platform` folder on your assignment branch : https://github.com/rahulub/AIE9/tree/main/15_LangGraph_Deployments
