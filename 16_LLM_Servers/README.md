@@ -83,7 +83,29 @@ What is the difference between serverless and dedicated endpoints?
 
 #### ✅ Answer:
 
-_(insert your answer here)_
+## Serverless Endpoints
+- **No setup required** — You use the endpoint directly (e.g., `accounts/fireworks/models/gpt-oss-20b`) without deploying anything.
+- **Auto-scaled** — The provider manages capacity behind the scenes; resources scale with demand.
+- **Pay-per-use** — You're billed for actual usage (tokens/requests), not idle time.
+- **Best for** — Light or variable traffic, quick experiments, getting started without deployment hassle.
+
+## Dedicated Endpoints
+- **Requires deployment** — You provision your own endpoint (e.g., via `firectl`) with explicit min/max replicas.
+- **Reserved capacity** — Resources are reserved for you, so you have guaranteed throughput and typically lower latency.
+- **Pay for uptime** — You're billed for the time the deployment runs (e.g., hourly), even when idle.
+- **Best for** — Production workloads, consistent traffic, or when you need predictable performance.
+
+## Quick Comparison
+
+| Aspect | Serverless | Dedicated |
+|--------|------------|-----------|
+| Setup | None | Requires deployment |
+| Capacity | Shared, auto-scaled | Reserved for you |
+| Cost model | Pay per use | Pay for uptime |
+| Best for | Variable/sporadic traffic | Consistent, high traffic |
+| Management | Hands-off | Must start/stop yourself |
+
+For your assignment, use **serverless** if you want to avoid setup and billing management; use **dedicated** when you need guaranteed capacity and are willing to manage deployment and costs.
 
 ### ❓ Question #2:
 
@@ -91,11 +113,52 @@ Why is it important to consider token throughput and latency when choosing an LL
 
 #### ✅ Answer:
 
-_(insert your answer here)_
+## Latency (Time to First Token)
+- **User experience** — Users expect quick responses. High latency (seconds per response) leads to frustration, perceived unresponsiveness, and higher abandonment rates.
+- **Conversation flow** — Chat interfaces rely on back-and-forth interaction. Slow replies break the sense of a natural dialogue.
+- **Trust** — Consistent, fast responses feel reliable; slow or erratic ones feel broken.
+
+## Token Throughput (Tokens per Second)
+- **Streaming UX** — Many interfaces stream tokens as they're generated. Low throughput means words appear slowly, which feels laggy even if time-to-first-token is decent.
+- **Concurrent users** — More users mean more requests at once. Throughput defines how many requests a model can handle in parallel without slowdown.
+- **Cost and efficiency** — Higher throughput finishes each request faster, which can reduce total compute time and cost at scale.
+
+## Summary
+
+| Factor | Why It Matters |
+|--------|----------------|
+| **Latency** | Determines how quickly the user sees *something* happening — crucial for perceived responsiveness. |
+| **Throughput** | Determines how fast the full response appears, especially when streaming. |
+| **Together** | Both affect the user experience for chat-style or streaming UIs. A model that’s strong on quality but weak on latency/throughput can still feel poor in production. |
+
+For user-facing apps, you typically need low latency and enough throughput to support streaming and concurrent users without noticeable lag — and you may need dedicated endpoints instead of serverless if traffic and performance requirements demand it.
+
 
 ## Activity 1: RAGAS Evaluation with Cost Analysis
 
 Use RAGAS to evaluate your open-source Fireworks AI powered RAG app against an OpenAI `gpt-4.1-mini` powered equivalent. Compare retrieval quality, answer faithfulness, and end-to-end accuracy across both providers.
+
+### RAGAS Scores Summary
+
+| Metric | OpenAI | Fireworks | Difference |
+|--------|--------|-----------|------------|
+| **Context precision** | 0.72 | 0.23 | +0.49 (OpenAI) |
+| **Context recall** | 0.90 | 0.20 | +0.70 (OpenAI) |
+| **Faithfulness** | 0.88 | 0.10 | +0.78 (OpenAI) |
+| **Answer relevancy** | 0.90 | 0.20 | +0.70 (OpenAI) |
+| **Answer correctness** | 0.88 | 0.43 | +0.45 (OpenAI) |
+
+### Summary
+
+- **OpenAI** performs better across all metrics.
+- **Fireworks** has much lower scores and often answers "I don't know."
+
+### Likely Causes for Fireworks Gap
+
+1. **Retrieval** — Fireworks embeddings may retrieve less relevant chunks (e.g., references vs. main content).
+2. **Chat model** — `gpt-oss-20b` tends to default to "I don't know" even when the context is useful.
+
+
 
 Additionally, instrument both pipelines with **LangSmith** to capture token usage and cost per query. Use LangSmith's tracing and cost dashboards to compare the total cost of running each provider at scale. Include your evaluation results, cost breakdown, and analysis in your Loom video.
 

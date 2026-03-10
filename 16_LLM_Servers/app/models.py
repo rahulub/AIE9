@@ -14,7 +14,9 @@ from typing import Any
 from langchain_core.messages import AIMessage
 from langchain_openai import ChatOpenAI
 
-FIREWORKS_BASE_URL = "https://api.fireworks.ai/inference/v1"
+FIREWORKS_BASE_URL = os.environ.get(
+    "FIREWORKS_BASE_URL", "https://api.fireworks.ai/inference/v1"
+)
 
 
 def get_chat_model(model_name: str | None = None, *, temperature: float = 0) -> Any:
